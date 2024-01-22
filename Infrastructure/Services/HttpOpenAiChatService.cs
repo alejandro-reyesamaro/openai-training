@@ -1,6 +1,6 @@
 ﻿using ChGPTcmd.Models.ActionResult;
 using Microsoft.Extensions.Configuration;
-using ChGPTcmd.Application.Handlers;
+using ChGPTcmd.Application.Services;
 using ChGPTcmd.Models.Constants;
 using ChGPTcmd.Models.Enums;
 using Microsoft.Extensions.Logging;
@@ -8,15 +8,15 @@ using Newtonsoft.Json;
 using System.Text;
 using ChGPTcmd.Infrastructure.DTOs;
 
-namespace ChGPTcmd.Infrastructure.Handlers
+namespace ChGPTcmd.Infrastructure.Services
 {
-    public class OpenAiHandler : IChatHandler
+    public class HttpOpenAiChatService : IChatService
     {
         private HttpClient httpClient;
         private string endpoint;
-        private ILogger<OpenAiHandler> logger;
+        private ILogger<HttpOpenAiChatService> logger;
 
-        public OpenAiHandler(IConfiguration configuration, ILogger<OpenAiHandler> logger)
+        public HttpOpenAiChatService(IConfiguration configuration, ILogger<HttpOpenAiChatService> logger)
         {
             httpClient = new HttpClient();
             string key = configuration.GetValue<string>("OpenAI:ApiKey") ?? throw new InvalidDataException("Failed to load OpenApi-Key");
