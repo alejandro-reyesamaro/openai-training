@@ -1,19 +1,19 @@
 ﻿using Azure;
 using Azure.AI.OpenAI;
-using ChGPTcmd.Application.Handlers;
+using ChGPTcmd.Application.Services;
 using ChGPTcmd.Models.ActionResult;
 using ChGPTcmd.Models.Enums;
 using Microsoft.Extensions.Configuration;
 
-namespace ChGPTcmd.Infrastructure.Handlers
+namespace ChGPTcmd.Infrastructure.Services
 {
-    public class AzureOpenAiChatHandler : IChatHandler
+    public class AzureOpenAiChatService : IChatService
     {
         private OpenAIClient client;
         private string deploymentName;
         private ChatCompletionsOptions options;
 
-        public AzureOpenAiChatHandler(IConfiguration configuration)
+        public AzureOpenAiChatService(IConfiguration configuration)
         {
             client = new OpenAIClient(
                     new Uri(configuration.GetValue<string>("AzureOpenAI:ApiEndPoint") ?? throw new InvalidDataException("Failed to load Azure OpenApi-Endpoint")),

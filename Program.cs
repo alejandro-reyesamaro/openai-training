@@ -2,18 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using Azure.AI.OpenAI;
-using System.Text;
-using Azure;
-using ChGPTcmd.Models.Enums;
-using ChGPTcmd.Models.Constants;
-using ChGPTcmd.Application;
-using ChGPTcmd.Models.ActionResult;
-using ChGPTcmd.Infrastructure;
-using ChGPTcmd.Infrastructure.Handlers;
-using ChGPTcmd.Application.Handlers;
+using ChGPTcmd.Infrastructure.Services;
+using ChGPTcmd.Application.Services;
 using ChGPTcmd.Application.Compilers;
 using ChGPTcmd.Infrastructure.Compilers;
+using ChGPTcmd.Infrastructure.Handlers;
 
 namespace ChGPTcmd.Main
 {
@@ -54,38 +47,34 @@ namespace ChGPTcmd.Main
                 {
                     services.AddTransient(c => configuration);
                     services.AddTransient<ICommandCompiler, CommandCompiler>();
-                    services.AddTransient<IChatHandler, OpenAiHandler>();
+                    services.AddTransient<IServiceHandler, ChatServiceHandler>();
+                    services.AddTransient<IChatService, HttpOpenAiChatService>();
                 })
                 .UseSerilog()
                 .Build();
 
             // Start 
-            var chatHandler = ActivatorUtilities.CreateInstance<OpenAiHandler>(host.Services);
-            var compiler = ActivatorUtilities.CreateInstance<CommandCompiler>(host.Services);
+            var handler = ActivatorUtilities.CreateInstance<ChatServiceHandler>(host.Services);
 
-            CommandStatus result = CommandStatus.Success;
-            await chatHandler.SetUp(messages);
+            int option = 1;
             do
             {
-                Console.Write(CmdConstants.PROMPT_TAG);
-                string? commandLine = Console.ReadLine();
-                PromptResult compilerResult = compiler.ExtractCommand(commandLine ?? CmdConstants.PROMPT_QUIT_COMMAND);
-                result = compilerResult.State;
+                Console.WriteLine("Chose a service (enter the number)");
+                Console.WriteLine("(1) ChatGPT Service");
 
-                if (compilerResult != null)
+                string? line = Console.ReadLine();
+                bool correct = int.TryParse(line, out option);
+                if (correct)
                 {
-                    if (compilerResult.State == CommandStatus.Success)
-                    {
-                        PromptResult response = await chatHandler.Handle(compilerResult.Prompt);
-                        PrintResponse(response.MainMessage);
-                    }
+                    if (handler.Handles(option))
+                        await handler.Handle();
                 }
                 else
                 {
-                    Log.Logger.Error("Error getting command line!");
+                    Log.Logger.Error("Error getting option!");
                 }
 
-            } while (result != CommandStatus.Quit);
+            } while (option != 0);
 
         }
 
