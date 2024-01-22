@@ -1,0 +1,11 @@
+{
+  "AzureOpenAI": {
+    "ApiKey": "",
+    "ApiEndPoint": "https://alex-openai-rsrc.openai.azure.com/",
+    "DeploymentName": "alex-gpt35-turbo-dep"
+  },
+  "OpenAI": {
+    "ApiKey": "",
+    "ApiEndPoint": "https://api.openai.com/v1/chat/completions"
+  }
+}
