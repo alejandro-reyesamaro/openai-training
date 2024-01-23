@@ -48,26 +48,34 @@ namespace ChGPTcmd.Main
                     services.AddTransient(c => configuration);
                     services.AddTransient<ICommandCompiler, CommandCompiler>();
                     services.AddTransient<IServiceHandler, ChatServiceHandler>();
+                    services.AddTransient<IServiceHandler, ImageGenerationServiceHandler>();
                     services.AddTransient<IChatService, HttpOpenAiChatService>();
+                    services.AddTransient<ImageGenerationService, HttpOpenAiImageGenerationService>();
                 })
                 .UseSerilog()
                 .Build();
 
-            // Start 
-            var handler = ActivatorUtilities.CreateInstance<ChatServiceHandler>(host.Services);
+            // Start
+            List<IServiceHandler> handlers = new List<IServiceHandler>()
+            {
+                ActivatorUtilities.CreateInstance<ChatServiceHandler>(host.Services),
+                ActivatorUtilities.CreateInstance<ImageGenerationServiceHandler>(host.Services),
+            };
 
             int option = 1;
             do
             {
                 Console.WriteLine("Chose a service (enter the number)");
                 Console.WriteLine("(1) ChatGPT Service");
+                Console.WriteLine("(2) Image Generation Service");
 
                 string? line = Console.ReadLine();
                 bool correct = int.TryParse(line, out option);
                 if (correct)
                 {
-                    if (handler.Handles(option))
-                        await handler.Handle();
+                    foreach (var handler in handlers)
+                        if (handler.Handles(option))
+                            await handler.Handle();
                 }
                 else
                 {

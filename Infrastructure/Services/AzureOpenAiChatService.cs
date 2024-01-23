@@ -31,7 +31,7 @@ namespace ChGPTcmd.Infrastructure.Services
             return Task.CompletedTask;
         }
 
-        public async Task<PromptResult> Handle(string prompt)
+        public async Task<PromptResult> Post(string prompt)
         {
             options.Messages.Add(new ChatRequestUserMessage(prompt));
             historyMessages.Add(new ChatRequestUserMessageDto(prompt));

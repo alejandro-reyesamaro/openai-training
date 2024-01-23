@@ -21,7 +21,7 @@ namespace ChGPTcmd.Infrastructure.Services
             httpClient = new HttpClient();
             string key = configuration.GetValue<string>("OpenAI:ApiKey") ?? throw new InvalidDataException("Failed to load OpenApi-Key");
             httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {key}");
-            endpoint = configuration.GetValue<string>("OpenAI:ApiEndPoint") ?? throw new InvalidDataException("Failed to load OpenApi-Endpoint");
+            endpoint = configuration.GetValue<string>("OpenAI:ChatApiEndPoint") ?? throw new InvalidDataException("Failed to load OpenApi-Endpoint");
             this.logger = logger;
         }
         
@@ -33,7 +33,7 @@ namespace ChGPTcmd.Infrastructure.Services
             string strResponse = await response.Content.ReadAsStringAsync();
             try
             {
-                var data = JsonConvert.DeserializeObject<HttpOpenApiResponseDto>(strResponse);
+                var data = JsonConvert.DeserializeObject<HttpOpenApiChatResponseDto>(strResponse);
                 string? answer = data?.Choices?.ElementAt(0).Message?.Content;
                 if (answer == null)
                 {
@@ -52,7 +52,7 @@ namespace ChGPTcmd.Infrastructure.Services
             }
         }
 
-        public async Task<PromptResult> Handle(string prompt)
+        public async Task<PromptResult> Post(string prompt)
         {
             historyMessages.Add(new ChatRequestUserMessageDto(prompt));
             StringContent content = BuildChatContent(ModelConstants.MODEL_GPT3Turbo);
@@ -61,7 +61,7 @@ namespace ChGPTcmd.Infrastructure.Services
             PromptResult result = new PromptResult();
             try
             {
-                var data = JsonConvert.DeserializeObject<HttpOpenApiResponseDto>(strResponse);
+                var data = JsonConvert.DeserializeObject<HttpOpenApiChatResponseDto>(strResponse);
                 if (data == null || data.Choices == null || data.Choices.Count() == 0)
                 {
                     result.State = CommandStatus.ApiError;
