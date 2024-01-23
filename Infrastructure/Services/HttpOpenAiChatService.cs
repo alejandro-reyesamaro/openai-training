@@ -10,7 +10,7 @@ using ChGPTcmd.Infrastructure.DTOs;
 
 namespace ChGPTcmd.Infrastructure.Services
 {
-    public class HttpOpenAiChatService : IChatService
+    public class HttpOpenAiChatService : BaseChatService, IChatService
     {
         private HttpClient httpClient;
         private string endpoint;
@@ -27,13 +27,24 @@ namespace ChGPTcmd.Infrastructure.Services
         
         public async Task SetUp(IList<string> systemMessages)
         {
-            StringContent content = BuildContent(ModelConstants.MODEL_GPT3Turbo, ModelConstants.ROLE_USER, systemMessages.ToArray());
+            systemMessages.ToList().ForEach(msg => this.systemMessages.Add(new ChatRequestSystemMessageDto(msg)));
+            StringContent content = BuildSystemContent(ModelConstants.MODEL_GPT3Turbo);
             HttpResponseMessage response = await httpClient.PostAsync(endpoint, content);
             string strResponse = await response.Content.ReadAsStringAsync();
             try
             {
                 var data = JsonConvert.DeserializeObject<HttpOpenApiResponseDto>(strResponse);
-                logger.LogInformation(data?.Choices?.ElementAt(0).Message?.Content ?? "ERR");
+                string? answer = data?.Choices?.ElementAt(0).Message?.Content;
+                if (answer == null)
+                {
+                    logger.LogError(strResponse);
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.WriteLine(answer);
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
             }
             catch (Exception ex)
             {
@@ -43,7 +54,8 @@ namespace ChGPTcmd.Infrastructure.Services
 
         public async Task<PromptResult> Handle(string prompt)
         {
-            StringContent content = BuildContent(ModelConstants.MODEL_GPT3Turbo, ModelConstants.ROLE_USER, prompt);
+            historyMessages.Add(new ChatRequestUserMessageDto(prompt));
+            StringContent content = BuildChatContent(ModelConstants.MODEL_GPT3Turbo);
             HttpResponseMessage response = await httpClient.PostAsync(endpoint, content);
             string strResponse = await response.Content.ReadAsStringAsync();
             PromptResult result = new PromptResult();
@@ -58,7 +70,9 @@ namespace ChGPTcmd.Infrastructure.Services
                 else
                 {
                     result.State = CommandStatus.Success;
-                    result.MainMessage = data.Choices.ElementAt(0).Message?.Content ?? "<No Content>";
+                    string answer = data.Choices.ElementAt(0).Message?.Content ?? "<No Content>";
+                    result.MainMessage = answer;
+                    historyMessages.Add(new ChatRequestAssistantMessageDto(answer));
                 }
             }
             catch (Exception ex)
@@ -70,18 +84,29 @@ namespace ChGPTcmd.Infrastructure.Services
             return result;
         }
 
-        private StringContent BuildContent(string model, string role, params string[] messages)
+        public new void ClearChatHistory()
         {
-            string content = "{\"model\": \"" + model + "\", \"messages\": [" + BuildMessagesList(role, messages) + "], \"temperature\": 0.5, \"max_tokens\": 1024, \"top_p\": 1, \"frequency_penalty\": 0, \"presence_penalty\": 0 }";
+            base.ClearChatHistory();
+        }
+
+        private StringContent BuildSystemContent(string model)
+        {
+            string content = "{\"model\": \"" + model + "\", \"messages\": [" + BuildMessagesList(systemMessages) + "], \"temperature\": 0.5, \"max_tokens\": 1024, \"top_p\": 1, \"frequency_penalty\": 0, \"presence_penalty\": 0 }";
             return new StringContent(content, Encoding.UTF8, "application/json");
         }
 
-        private string BuildMessagesList(string role, IList<string> messages)
+        private StringContent BuildChatContent(string model)
+        {
+            string content = "{\"model\": \"" + model + "\", \"messages\": [" + BuildMessagesList(historyMessages) + "], \"temperature\": 0.5, \"max_tokens\": 1024, \"top_p\": 1, \"frequency_penalty\": 0, \"presence_penalty\": 0 }";
+            return new StringContent(content, Encoding.UTF8, "application/json");
+        }
+
+        private string BuildMessagesList(List<IChatRequestMessage> messages)
         {
             var jsonMessages = new List<string>();
             foreach (var message in messages)
             {
-                jsonMessages.Add("{\"role\": \"" + role + "\", \"content\": \"" + message + "\"}");
+                jsonMessages.Add("{\"role\": \"" + message.Role.ToString() + "\", \"content\": \"" + message.Content + "\"}");
             }
 
             return string.Join(",", jsonMessages);

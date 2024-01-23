@@ -7,5 +7,6 @@ namespace ChGPTcmd.Application.Services
     {
         public Task SetUp(IList<string> systemMessages);
         public Task<PromptResult> Handle(string prompt);
+        public void ClearChatHistory();
     }
 }
