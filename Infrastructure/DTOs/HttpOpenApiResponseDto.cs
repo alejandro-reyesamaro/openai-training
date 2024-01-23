@@ -5,6 +5,6 @@
         public string? Id { get; set; }
         public string? Object { get; set; }
         public string? Model { get; set; }
-        public IEnumerable<ChoiceDto>? Choices { get; set; }
+        public IEnumerable<ChoiceJsonDto>? Choices { get; set; }
     }
 }

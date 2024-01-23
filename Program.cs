@@ -38,7 +38,7 @@ namespace ChGPTcmd.Main
 
             IList<string> messages = new List<string>()
             {
-                "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with UNKNOWN"
+                "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, you will respond with the word \"UNKNOWN\""
             };
 
             //!- Dependency injection
