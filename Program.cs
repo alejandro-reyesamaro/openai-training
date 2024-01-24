@@ -7,6 +7,7 @@ using ChGPTcmd.Application.Services;
 using ChGPTcmd.Application.Compilers;
 using ChGPTcmd.Infrastructure.Compilers;
 using ChGPTcmd.Infrastructure.Handlers;
+using ChGPTcmd.Infrastructure.Configuration.Options;
 
 namespace ChGPTcmd.Main
 {
@@ -45,6 +46,10 @@ namespace ChGPTcmd.Main
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
+                    services.AddOptions()
+                        .Configure<AzureOpenAiOptions>(configuration.GetSection(AzureOpenAiOptions.CONFIG_SECTION))
+                        .Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.CONFIG_SECTION));
+
                     services.AddTransient(c => configuration);
                     services.AddTransient<ICommandCompiler, CommandCompiler>();
                     services.AddTransient<IServiceHandler, ChatServiceHandler>();
@@ -84,25 +89,6 @@ namespace ChGPTcmd.Main
 
             } while (option != 0);
 
-        }
-
-        private static void PrintResponse(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"R/ {message}");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine();
-        }
-
-        private static void PrintResponses(List<string> messages)
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            for (int i = 0; i < messages.Count(); i++) 
-            {
-                Console.WriteLine($"{i+1}- {messages[i]}");
-            }
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine();
         }
 
         private static void BuildConfig(IConfigurationBuilder builder)

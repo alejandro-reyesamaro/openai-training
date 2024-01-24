@@ -1,5 +1,4 @@
 ﻿using ChGPTcmd.Models.ActionResult;
-using Microsoft.Extensions.Configuration;
 using ChGPTcmd.Application.Services;
 using ChGPTcmd.Models.Constants;
 using ChGPTcmd.Models.Enums;
@@ -7,21 +6,22 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Text;
 using ChGPTcmd.Infrastructure.DTOs;
+using ChGPTcmd.Infrastructure.Configuration.Options;
+using Microsoft.Extensions.Options;
 
 namespace ChGPTcmd.Infrastructure.Services
 {
     public class HttpOpenAiChatService : BaseChatService, IChatService
     {
         private HttpClient httpClient;
-        private string endpoint;
+        private OpenAiOptions openAiOptions;
         private ILogger<HttpOpenAiChatService> logger;
 
-        public HttpOpenAiChatService(IConfiguration configuration, ILogger<HttpOpenAiChatService> logger)
+        public HttpOpenAiChatService(IOptions<OpenAiOptions> openAiOptions, ILogger<HttpOpenAiChatService> logger)
         {
+            this.openAiOptions = openAiOptions.Value;
             httpClient = new HttpClient();
-            string key = configuration.GetValue<string>("OpenAI:ApiKey") ?? throw new InvalidDataException("Failed to load OpenApi-Key");
-            httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {key}");
-            endpoint = configuration.GetValue<string>("OpenAI:ChatApiEndPoint") ?? throw new InvalidDataException("Failed to load OpenApi-Endpoint");
+            httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {this.openAiOptions.ApiKey}");
             this.logger = logger;
         }
         
@@ -29,7 +29,7 @@ namespace ChGPTcmd.Infrastructure.Services
         {
             systemMessages.ToList().ForEach(msg => this.systemMessages.Add(new ChatRequestSystemMessageDto(msg)));
             StringContent content = BuildSystemContent(ModelConstants.MODEL_GPT3Turbo);
-            HttpResponseMessage response = await httpClient.PostAsync(endpoint, content);
+            HttpResponseMessage response = await httpClient.PostAsync(openAiOptions.ChatApiEndPoint, content);
             string strResponse = await response.Content.ReadAsStringAsync();
             try
             {
@@ -48,7 +48,7 @@ namespace ChGPTcmd.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                logger.LogError($"---> Deserialization failed: {ex.Message}");
+                logger.LogError($"Deserialization failed: {ex.Message}");
             }
         }
 
@@ -56,7 +56,7 @@ namespace ChGPTcmd.Infrastructure.Services
         {
             historyMessages.Add(new ChatRequestUserMessageDto(prompt));
             StringContent content = BuildChatContent(ModelConstants.MODEL_GPT3Turbo);
-            HttpResponseMessage response = await httpClient.PostAsync(endpoint, content);
+            HttpResponseMessage response = await httpClient.PostAsync(openAiOptions.ChatApiEndPoint, content);
             string strResponse = await response.Content.ReadAsStringAsync();
             PromptResult result = new PromptResult();
             try
@@ -88,6 +88,12 @@ namespace ChGPTcmd.Infrastructure.Services
         {
             base.ClearChatHistory();
         }
+        
+        
+        
+        // TODO
+
+
 
         private StringContent BuildSystemContent(string model)
         {

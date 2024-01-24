@@ -1,37 +1,35 @@
 ﻿using ChGPTcmd.Application.Services;
+using ChGPTcmd.Infrastructure.Configuration.Options;
 using ChGPTcmd.Models.Constants;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.Extensions.Options;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ChGPTcmd.Infrastructure.Services
 {
     public class HttpOpenAiImageGenerationService : ImageGenerationService
     {
         private HttpClient httpClient;
-        private string endpoint;
+        private OpenAiOptions openAiOptions;
         private ILogger<HttpOpenAiImageGenerationService> logger;
 
-        public HttpOpenAiImageGenerationService(IConfiguration configuration, ILogger<HttpOpenAiImageGenerationService> logger)
+        public HttpOpenAiImageGenerationService(IOptions<OpenAiOptions> openAiOptions, ILogger<HttpOpenAiImageGenerationService> logger)
         {
+            this.openAiOptions = openAiOptions.Value;
             httpClient = new HttpClient();
-            string key = configuration.GetValue<string>("OpenAI:ApiKey") ?? throw new InvalidDataException("Failed to load OpenApi-Key");
-            httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {key}");
-            endpoint = configuration.GetValue<string>("OpenAI:ImageApiEndPoint") ?? throw new InvalidDataException("Failed to load OpenApi-Endpoint");
+            httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {this.openAiOptions.ApiKey}");
             this.logger = logger;
         }
 
         public async Task Post(string prompt)
         {
             StringContent content = BuildBody(prompt);
-            HttpResponseMessage response = await httpClient.PostAsync(endpoint, content);
+            HttpResponseMessage response = await httpClient.PostAsync(openAiOptions.ImageApiEndPoint, content);
             string strResponse = await response.Content.ReadAsStringAsync();
             Console.WriteLine(strResponse);
         }
+
+        // TODO
 
         private StringContent BuildBody(string prompt)
         {
