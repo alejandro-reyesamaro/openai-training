@@ -50,7 +50,7 @@ namespace ChGPTcmd.Main
                     services.AddTransient<IServiceHandler, ChatServiceHandler>();
                     services.AddTransient<IServiceHandler, ImageGenerationServiceHandler>();
                     services.AddTransient<IChatService, HttpOpenAiChatService>();
-                    services.AddTransient<ImageGenerationService, HttpOpenAiImageGenerationService>();
+                    services.AddTransient<ImageGenerationService, HttpAzureOpenAiImageGenerationService>();
                 })
                 .UseSerilog()
                 .Build();
