@@ -29,7 +29,7 @@ namespace ChGPTcmd.Infrastructure.Handlers
         {
             IList<string> messages = new List<string>()
             {
-                "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with UNKNOWN"
+                "You are a highly intelligent question answering bot. If I ask you a question that is rooted in truth, you will give me the answer. If I ask you a question that is nonsense, trickery, or has no clear answer, you will respond with UNKNOWN"
             };
 
             CommandStatus result = CommandStatus.Success;
