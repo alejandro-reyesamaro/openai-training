@@ -6,6 +6,7 @@ using System.Text.Json;
 using ChGPTcmd.Infrastructure.DTOs;
 using Microsoft.Extensions.Options;
 using ChGPTcmd.Infrastructure.Configuration.Options;
+using ChGPTcmd.Models.Constants;
 
 namespace ChGPTcmd.Infrastructure.Services
 {
@@ -46,9 +47,9 @@ namespace ChGPTcmd.Infrastructure.Services
             {
                 await Task.Delay(2000);
                 HttpResponseMessage checkResponse = await httpClient.GetAsync(checkEndpoint);
-                (bool success, ImageResponseItemDto? imageCreationResponse) = await GetImageCreationResponseAsync(checkResponse);
-                isFinished = success;
-                if (success && imageCreationResponse is not null)
+                ImageResponseItemDto? imageCreationResponse = await GetImageCreationResponseAsync(checkResponse);
+                isFinished = imageCreationResponse is not null;
+                if (imageCreationResponse is not null)
                 {
                     string urls = string.Join(Environment.NewLine, imageCreationResponse.Result.Data.Select(x => x.Url));
                     Console.WriteLine($"Image ID: {id}");
@@ -59,9 +60,8 @@ namespace ChGPTcmd.Infrastructure.Services
 
         private HttpRequestMessage CreateHttpRequestMessage(string prompt, int? amount, int size)
         {
-            // TODO
-            string sizeValue = size + "x" + size;
-            ImageRequestItemDto requestItem = new() 
+            string sizeValue = DalleImageSizeConstants.IMG_SIZE_1024;
+            ImageRequestBodyDto requestItem = new() 
             { 
                 Prompt = prompt, 
                 AmountOfImages = amount, 
@@ -84,14 +84,12 @@ namespace ChGPTcmd.Infrastructure.Services
             return response?.Id;
         }
 
-        private async Task<(bool Success, ImageResponseItemDto? Response)> GetImageCreationResponseAsync(HttpResponseMessage httpResponseMessage)
+        private async Task<ImageResponseItemDto?> GetImageCreationResponseAsync(HttpResponseMessage httpResponseMessage)
         {
             httpResponseMessage.EnsureSuccessStatusCode();
             string content = await httpResponseMessage.Content.ReadAsStringAsync();
             ImageResponseItemDto? response = JsonSerializer.Deserialize<ImageResponseItemDto>(content);
-            return (response?.Status == "succeeded")
-                ? (true, response)
-                :(false, null);
+            return response?.Status == "succeeded" ? response : null;
         }
 
         private string GetCheckEndpoint(string? id) => $"{openAiOptions.ImageOperationBaseUrl}{id}?api-version=2023-06-01-preview";

@@ -71,8 +71,9 @@ namespace ChGPTcmd.Main
             do
             {
                 Console.WriteLine("Chose a service (enter the number)");
+                Console.WriteLine("(0) EXIT");
                 Console.WriteLine("(1) ChatGPT Service");
-                Console.WriteLine("(2) Image Generation Service");
+                Console.WriteLine("(2) Image Generation Service");                
 
                 string? line = Console.ReadLine();
                 bool correct = int.TryParse(line, out option);
@@ -89,6 +90,8 @@ namespace ChGPTcmd.Main
 
             } while (option != 0);
 
+            Console.WriteLine("Bye!");
+            Console.WriteLine();
         }
 
         private static void BuildConfig(IConfigurationBuilder builder)

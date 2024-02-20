@@ -2,7 +2,7 @@
 
 namespace ChGPTcmd.Infrastructure.DTOs
 {
-    public class ImageRequestItemDto
+    public class ImageRequestBodyDto
     {
         [property: JsonPropertyName("prompt")]
         public string Prompt { get; set; } = string.Empty;
