@@ -37,8 +37,6 @@ namespace ChGPTcmd.Infrastructure.Services
             string? id = await GetGenerationIdAsync(response);
 
             Console.WriteLine();
-            Console.WriteLine($"Your ID: {id}");
-            Console.WriteLine();
             Console.WriteLine("Image(s) will be generated...");
             var checkEndpoint = GetCheckEndpoint(id);
             
@@ -52,7 +50,7 @@ namespace ChGPTcmd.Infrastructure.Services
                 if (imageCreationResponse is not null)
                 {
                     string urls = string.Join(Environment.NewLine, imageCreationResponse.Result.Data.Select(x => x.Url));
-                    Console.WriteLine($"Image ID: {id}");
+                    //Console.WriteLine($"Image ID: {id}");
                     Console.WriteLine($"Image URL: {urls}");
                 }
             } while (!isFinished);
