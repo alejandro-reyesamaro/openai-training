@@ -1,10 +1,11 @@
 ﻿using Azure;
 using Azure.AI.OpenAI;
 using ChGPTcmd.Application.Services;
+using ChGPTcmd.Infrastructure.Configuration.Options;
 using ChGPTcmd.Infrastructure.DTOs;
 using ChGPTcmd.Models.ActionResult;
 using ChGPTcmd.Models.Enums;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 
 namespace ChGPTcmd.Infrastructure.Services
@@ -12,15 +13,15 @@ namespace ChGPTcmd.Infrastructure.Services
     public class AzureOpenAiChatService : BaseChatService, IChatService
     {
         private OpenAIClient client;
-        private string deploymentName;
+        private AzureOpenAiOptions openAiOptions;
         private ChatCompletionsOptions options;
 
-        public AzureOpenAiChatService(IConfiguration configuration)
+        public AzureOpenAiChatService(IOptions<AzureOpenAiOptions> openAiOptions)
         {
+            this.openAiOptions = openAiOptions.Value;
             client = new OpenAIClient(
-                    new Uri(configuration.GetValue<string>("AzureOpenAI:ApiEndPoint") ?? throw new InvalidDataException("Failed to load Azure OpenApi-Endpoint")),
-                    new AzureKeyCredential(configuration.GetValue<string>("AzureOpenAI:ApiKey") ?? throw new InvalidDataException("Failed to load Azure OpenApi-key")));
-            deploymentName = configuration.GetValue<string>("AzureOpenAI:DeploymentName") ?? throw new InvalidDataException("Failed to load Azure OpenApi deployment name");
+                    new Uri(this.openAiOptions.ApiEndPoint ?? throw new InvalidDataException("Failed to load Azure OpenApi-Endpoint")),
+                    new AzureKeyCredential(this.openAiOptions.ApiKey ?? throw new InvalidDataException("Failed to load Azure OpenApi-key")));
             SetUpOptions();
         }
 
@@ -31,7 +32,7 @@ namespace ChGPTcmd.Infrastructure.Services
             return Task.CompletedTask;
         }
 
-        public async Task<PromptResult> Handle(string prompt)
+        public async Task<PromptResult> Post(string prompt)
         {
             options.Messages.Add(new ChatRequestUserMessage(prompt));
             historyMessages.Add(new ChatRequestUserMessageDto(prompt));
@@ -68,8 +69,7 @@ namespace ChGPTcmd.Infrastructure.Services
             {
                 Temperature = (float)0.7,
                 MaxTokens = 800,
-                DeploymentName = deploymentName,
-                NucleusSamplingFactor = (float)0.95,
+                DeploymentName = openAiOptions.DeploymentName ?? throw new InvalidDataException("Failed to load Azure OpenApi deployment name"),                
                 FrequencyPenalty = 0,
                 PresencePenalty = 0,
             };

@@ -4,9 +4,8 @@ using ChGPTcmd.Models.ActionResult;
 using ChGPTcmd.Models.Constants;
 using ChGPTcmd.Models.Enums;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
-namespace ChGPTcmd.Infrastructure.Handlers
+namespace ChGPTcmd.Application.Handlers
 {
     public class ChatServiceHandler : IServiceHandler
     {
@@ -14,7 +13,7 @@ namespace ChGPTcmd.Infrastructure.Handlers
         private IChatService chatService;
         private ICommandCompiler compiler;
 
-        public ChatServiceHandler(IChatService chatService, ICommandCompiler compiler, ILogger<ChatServiceHandler> logger) 
+        public ChatServiceHandler(IChatService chatService, ICommandCompiler compiler, ILogger<ChatServiceHandler> logger)
         {
             this.chatService = chatService;
             this.compiler = compiler;
@@ -30,7 +29,7 @@ namespace ChGPTcmd.Infrastructure.Handlers
         {
             IList<string> messages = new List<string>()
             {
-                "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with UNKNOWN"
+                "You are a highly intelligent question answering bot. If I ask you a question that is rooted in truth, you will give me the answer. If I ask you a question that is nonsense, trickery, or has no clear answer, you will respond with UNKNOWN"
             };
 
             CommandStatus result = CommandStatus.Success;
@@ -38,7 +37,7 @@ namespace ChGPTcmd.Infrastructure.Handlers
 
             do
             {
-                Console.Write(CmdConstants.PROMPT_TAG);
+                Console.Write(CmdConstants.PROMPT_CHAT_TAG);
                 string? commandLine = Console.ReadLine();
                 PromptResult compilerResult = compiler.ExtractCommand(commandLine ?? CmdConstants.PROMPT_QUIT_COMMAND);
                 result = compilerResult.State;
@@ -47,7 +46,7 @@ namespace ChGPTcmd.Infrastructure.Handlers
                 {
                     if (compilerResult.State == CommandStatus.Success)
                     {
-                        PromptResult response = await chatService.Handle(compilerResult.Prompt);
+                        PromptResult response = await chatService.Post(compilerResult.Prompt);
                         PrintResponse(response.MainMessage);
                     }
                 }

@@ -6,7 +6,8 @@ using ChGPTcmd.Infrastructure.Services;
 using ChGPTcmd.Application.Services;
 using ChGPTcmd.Application.Compilers;
 using ChGPTcmd.Infrastructure.Compilers;
-using ChGPTcmd.Infrastructure.Handlers;
+using ChGPTcmd.Infrastructure.Configuration.Options;
+using ChGPTcmd.Application.Handlers;
 
 namespace ChGPTcmd.Main
 {
@@ -36,38 +37,50 @@ namespace ChGPTcmd.Main
                 return;
             }
 
-            IList<string> messages = new List<string>()
-            {
-                "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, you will respond with the word \"UNKNOWN\""
-            };
-
             //!- Dependency injection
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
+                    services.AddOptions()
+                        .Configure<AzureOpenAiOptions>(configuration.GetSection(AzureOpenAiOptions.CONFIG_SECTION))
+                        .Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.CONFIG_SECTION));
+
                     services.AddTransient(c => configuration);
                     services.AddTransient<ICommandCompiler, CommandCompiler>();
                     services.AddTransient<IServiceHandler, ChatServiceHandler>();
-                    services.AddTransient<IChatService, HttpOpenAiChatService>();
+                    services.AddTransient<IServiceHandler, ImageGenerationServiceHandler>();
+                    
+                    //services.AddTransient<IChatService, HttpOpenAiChatService>();
+                    services.AddTransient<IChatService, AzureOpenAiChatService>();
+
+                    //services.AddTransient<ImageGenerationService, HttpOpenAiImageGenerationService>();
+                    services.AddTransient<ImageGenerationService, HttpAzureOpenAiImageGenerationService>();
                 })
                 .UseSerilog()
                 .Build();
 
-            // Start 
-            var handler = ActivatorUtilities.CreateInstance<ChatServiceHandler>(host.Services);
+            // Start
+            List<IServiceHandler> handlers = new List<IServiceHandler>()
+            {
+                ActivatorUtilities.CreateInstance<ChatServiceHandler>(host.Services),
+                ActivatorUtilities.CreateInstance<ImageGenerationServiceHandler>(host.Services),
+            };
 
             int option = 1;
             do
             {
                 Console.WriteLine("Chose a service (enter the number)");
+                Console.WriteLine("(0) EXIT");
                 Console.WriteLine("(1) ChatGPT Service");
+                Console.WriteLine("(2) Image Generation Service");                
 
                 string? line = Console.ReadLine();
                 bool correct = int.TryParse(line, out option);
                 if (correct)
                 {
-                    if (handler.Handles(option))
-                        await handler.Handle();
+                    foreach (var handler in handlers)
+                        if (handler.Handles(option))
+                            await handler.Handle();
                 }
                 else
                 {
@@ -76,24 +89,7 @@ namespace ChGPTcmd.Main
 
             } while (option != 0);
 
-        }
-
-        private static void PrintResponse(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"R/ {message}");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine();
-        }
-
-        private static void PrintResponses(List<string> messages)
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            for (int i = 0; i < messages.Count(); i++) 
-            {
-                Console.WriteLine($"{i+1}- {messages[i]}");
-            }
-            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("Bye!");
             Console.WriteLine();
         }
 

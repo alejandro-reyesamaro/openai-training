@@ -6,6 +6,7 @@
   },
   "OpenAI": {
     "ApiKey": "",
-    "ApiEndPoint": "https://api.openai.com/v1/chat/completions"
+    "ChatApiEndPoint": "https://api.openai.com/v1/chat/completions",
+    "ImageApiEndPoint": "https://api.openai.com/v1/images/generations"
   }
 }
