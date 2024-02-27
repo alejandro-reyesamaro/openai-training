@@ -1,9 +1,11 @@
 ﻿using ChGPTcmd.Application.Services;
 using ChGPTcmd.Infrastructure.Configuration.Options;
+using ChGPTcmd.Infrastructure.DTOs;
 using ChGPTcmd.Models.Constants;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
+using System.Text.Json;
 
 namespace ChGPTcmd.Infrastructure.Services
 {
@@ -29,12 +31,17 @@ namespace ChGPTcmd.Infrastructure.Services
             Console.WriteLine(strResponse);
         }
 
-        // TODO
-
         private StringContent BuildBody(string prompt)
         {
-            string content = "{\"model\": \"" + ModelConstants.MODEL_DALL_E_3 + "\", \"prompt\": \"" + prompt + "\", \"n\": 1, \"size\": \"1024x1024\" }";
-            return new StringContent(content, Encoding.UTF8, "application/json");   
+            var body = new ImageRequestWithModelBodyDto()
+            {
+                Model = ModelConstants.MODEL_DALL_E_3,
+                Prompt = prompt,
+                AmountOfImages = 1,
+                ImageSize = DalleImageSizeConstants.IMG_SIZE_1024
+            };
+            string content = JsonSerializer.Serialize(body);
+            return new StringContent(content, Encoding.UTF8, "application/json");
         }
     }
 }

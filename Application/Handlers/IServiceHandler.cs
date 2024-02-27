@@ -1,4 +1,4 @@
-﻿namespace ChGPTcmd.Infrastructure.Handlers
+﻿namespace ChGPTcmd.Application.Handlers
 {
     public interface IServiceHandler
     {

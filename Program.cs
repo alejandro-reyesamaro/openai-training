@@ -6,8 +6,8 @@ using ChGPTcmd.Infrastructure.Services;
 using ChGPTcmd.Application.Services;
 using ChGPTcmd.Application.Compilers;
 using ChGPTcmd.Infrastructure.Compilers;
-using ChGPTcmd.Infrastructure.Handlers;
 using ChGPTcmd.Infrastructure.Configuration.Options;
+using ChGPTcmd.Application.Handlers;
 
 namespace ChGPTcmd.Main
 {
@@ -37,11 +37,6 @@ namespace ChGPTcmd.Main
                 return;
             }
 
-            IList<string> messages = new List<string>()
-            {
-                "I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, you will respond with the word \"UNKNOWN\""
-            };
-
             //!- Dependency injection
             var host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
@@ -54,7 +49,11 @@ namespace ChGPTcmd.Main
                     services.AddTransient<ICommandCompiler, CommandCompiler>();
                     services.AddTransient<IServiceHandler, ChatServiceHandler>();
                     services.AddTransient<IServiceHandler, ImageGenerationServiceHandler>();
-                    services.AddTransient<IChatService, HttpOpenAiChatService>();
+                    
+                    //services.AddTransient<IChatService, HttpOpenAiChatService>();
+                    services.AddTransient<IChatService, AzureOpenAiChatService>();
+
+                    //services.AddTransient<ImageGenerationService, HttpOpenAiImageGenerationService>();
                     services.AddTransient<ImageGenerationService, HttpAzureOpenAiImageGenerationService>();
                 })
                 .UseSerilog()

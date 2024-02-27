@@ -6,6 +6,6 @@
 
         public string? ApiKey { get; set; }
         public string? ChatApiEndPoint { get; set; }
-        public string? ImageApiEndPoint { get;}
+        public string? ImageApiEndPoint { get; set; }
     }
 }

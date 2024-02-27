@@ -69,8 +69,7 @@ namespace ChGPTcmd.Infrastructure.Services
             {
                 Temperature = (float)0.7,
                 MaxTokens = 800,
-                DeploymentName = openAiOptions.DeploymentName ?? throw new InvalidDataException("Failed to load Azure OpenApi deployment name"),
-                NucleusSamplingFactor = (float)0.95,
+                DeploymentName = openAiOptions.DeploymentName ?? throw new InvalidDataException("Failed to load Azure OpenApi deployment name"),                
                 FrequencyPenalty = 0,
                 PresencePenalty = 0,
             };

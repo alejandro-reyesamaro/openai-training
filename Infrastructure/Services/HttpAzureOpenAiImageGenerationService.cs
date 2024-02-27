@@ -22,16 +22,16 @@ namespace ChGPTcmd.Infrastructure.Services
             httpClient = new HttpClient();
 
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            httpClient.DefaultRequestHeaders.Add("api-key", this.openAiOptions.ApiKey);
+            httpClient.DefaultRequestHeaders.Add("api-key", this.openAiOptions.ImageGenerationApiKey);
             httpClient.DefaultRequestHeaders.Add("x-ms-useragent", "AzureOpenAIImageConsole/0.0.1");
-            httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {this.openAiOptions.ApiKey}");
+            httpClient.DefaultRequestHeaders.Add("authorization", $"Bearer {this.openAiOptions.ImageGenerationApiKey}");
 
             this.logger = logger;
         }
 
         public async Task Post(string prompt)
         {
-            HttpRequestMessage requestMessage = CreateHttpRequestMessage(prompt, 1, 1024);
+            HttpRequestMessage requestMessage = CreateHttpRequestMessage(prompt, 1);
             HttpResponseMessage response = await httpClient.SendAsync(requestMessage);
             
             string? id = await GetGenerationIdAsync(response);
@@ -58,14 +58,13 @@ namespace ChGPTcmd.Infrastructure.Services
             } while (!isFinished);
         }
 
-        private HttpRequestMessage CreateHttpRequestMessage(string prompt, int? amount, int size)
+        private HttpRequestMessage CreateHttpRequestMessage(string prompt, int? amount)
         {
-            string sizeValue = DalleImageSizeConstants.IMG_SIZE_1024;
             ImageRequestBodyDto requestItem = new() 
             { 
                 Prompt = prompt, 
                 AmountOfImages = amount, 
-                ImageSize = sizeValue 
+                ImageSize = DalleImageSizeConstants.IMG_SIZE_1024
             };
             string requestContent = JsonSerializer.Serialize(requestItem);
             HttpRequestMessage request = new(HttpMethod.Post, openAiOptions.ImageGenerationBaseUrl)

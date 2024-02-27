@@ -5,7 +5,7 @@ using ChGPTcmd.Models.Constants;
 using ChGPTcmd.Models.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace ChGPTcmd.Infrastructure.Handlers
+namespace ChGPTcmd.Application.Handlers
 {
     public class ChatServiceHandler : IServiceHandler
     {
@@ -13,7 +13,7 @@ namespace ChGPTcmd.Infrastructure.Handlers
         private IChatService chatService;
         private ICommandCompiler compiler;
 
-        public ChatServiceHandler(IChatService chatService, ICommandCompiler compiler, ILogger<ChatServiceHandler> logger) 
+        public ChatServiceHandler(IChatService chatService, ICommandCompiler compiler, ILogger<ChatServiceHandler> logger)
         {
             this.chatService = chatService;
             this.compiler = compiler;

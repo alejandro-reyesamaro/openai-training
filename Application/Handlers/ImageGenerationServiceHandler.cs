@@ -5,7 +5,7 @@ using ChGPTcmd.Models.Constants;
 using ChGPTcmd.Models.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace ChGPTcmd.Infrastructure.Handlers
+namespace ChGPTcmd.Application.Handlers
 {
     public class ImageGenerationServiceHandler : IServiceHandler
     {
