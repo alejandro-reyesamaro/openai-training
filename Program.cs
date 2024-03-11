@@ -50,12 +50,15 @@ namespace ChGPTcmd.Main
                     services.AddTransient<ICommandCompiler, CommandCompiler>();
                     services.AddTransient<IServiceHandler, ChatServiceHandler>();
                     services.AddTransient<IServiceHandler, ImageGenerationServiceHandler>();
-                    
+                    services.AddTransient<IServiceHandler, SpeechServiceHandler>();
+
                     //services.AddTransient<IChatService, HttpOpenAiChatService>();
                     services.AddTransient<IChatService, AzureOpenAiChatService>();
 
                     //services.AddTransient<ImageGenerationService, HttpOpenAiImageGenerationService>();
                     services.AddTransient<ImageGenerationService, HttpAzureOpenAiImageGenerationService>();
+
+                    services.AddTransient<ISpeechService, AzureSpeechService>();
                 })
                 .UseSerilog()
                 .Build();
@@ -65,6 +68,7 @@ namespace ChGPTcmd.Main
             {
                 ActivatorUtilities.CreateInstance<ChatServiceHandler>(host.Services),
                 ActivatorUtilities.CreateInstance<ImageGenerationServiceHandler>(host.Services),
+                ActivatorUtilities.CreateInstance<SpeechServiceHandler>(host.Services)
             };
 
             int option = 1;
@@ -73,7 +77,8 @@ namespace ChGPTcmd.Main
                 Console.WriteLine("Chose a service (enter the number)");
                 Console.WriteLine("(0) EXIT");
                 Console.WriteLine("(1) ChatGPT Service");
-                Console.WriteLine("(2) Image Generation Service");                
+                Console.WriteLine("(2) Image Generation Service");
+                Console.WriteLine("(3) Speech Recognition Service");
 
                 string? line = Console.ReadLine();
                 bool correct = int.TryParse(line, out option);
