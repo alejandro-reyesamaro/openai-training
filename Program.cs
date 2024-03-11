@@ -43,7 +43,8 @@ namespace ChGPTcmd.Main
                 {
                     services.AddOptions()
                         .Configure<AzureOpenAiOptions>(configuration.GetSection(AzureOpenAiOptions.CONFIG_SECTION))
-                        .Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.CONFIG_SECTION));
+                        .Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.CONFIG_SECTION))
+                        .Configure<SpeechOptions>(configuration.GetSection(SpeechOptions.CONFIG_SECTION));
 
                     services.AddTransient(c => configuration);
                     services.AddTransient<ICommandCompiler, CommandCompiler>();
